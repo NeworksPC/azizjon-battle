@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АзизДжон - Битва</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .character {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 48px;
+        }
+        
+        .stats {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .health-bar {
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .player-health .health-fill {
+            background: linear-gradient(90deg, #00b894, #00a085);
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .attack-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .heal-btn {
+            background: #00b894;
+            color: white;
+        }
+        
+        .run-btn {
+            background: #fdcb6e;
+            color: #2d3436;
+        }
+        
+        .status-btn {
+            background: #74b9ff;
+            color: white;
+        }
+        
+        .dialogue {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-style: italic;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .location-selector {
+            margin: 15px 0;
+        }
+        
+        .location-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .game-mode {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .mode-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .pvp-section {
+            display: none;
+        }
+        
+        .battle-log {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 БИТВА С АЗИЗДЖОНОМ</h1>
+            <div class="character">💪🔥🥊</div>
+        </div>
+        
+        <div class="game-mode">
+            <button class="mode-btn" onclick="showMode('single')">⚔️ Одиночная</button>
+            <button class="mode-btn" onclick="showMode('pvp')">🎮 PVP</button>
+        </div>
+        
+        <div id="singlePlayer">
+            <div class="stats">
+                <h3>❤️ Ваше здоровье: <span id="playerHealth">100</span>%</h3>
+                <div class="health-bar player-health">
+                    <div class="health-fill" id="playerHealthBar" style="width: 100%"></div>
+                </div>
+                
+                <h3>💀 АзизДжон: <span id="bossHealth">150</span>%</h3>
+                <div class="health-bar">
+                    <div class="health-fill" id="bossHealthBar" style="width: 100%"></div>
+                </div>
+            </div>
+            
+            <div class="location-selector">
+                <h3>📍 Выберите локацию:</h3>
+                <button class="location-btn" onclick="selectLocation('smoking')">🚬 Курилка</button>
+                <button class="location-btn" onclick="selectLocation('toilet')">🚽 Толчок</button>
+                <button class="location-btn" onclick="selectLocation('mountains')">🏔️ Горы Кавказа</button>
+                <button class="location-btn" onclick="selectLocation('polyk')">🏫 Полик</button>
+            </div>
+            
+            <div class="dialogue" id="dialogue">
+                💪 Выберите локацию и начните бой!
+            </div>
+            
+            <div class="buttons">
+                <button class="btn attack-btn" onclick="playerAttack()">🥊 Атака</button>
+                <button class="btn heal-btn" onclick="playerHeal()">💊 Лечение</button>
+                <button class="btn status-btn" onclick="showStatus()">📊 Статус</button>
+                <button class="btn run-btn" onclick="runAway()">🏃 Бежать</button>
+            </div>
+            
+            <div class="battle-log" id="battleLog"></div>
+        </div>
+        
+        <div id="pvpSection" class="pvp-section">
+            <div class="stats">
+                <h3>❤️ Ваше здоровье: <span id="pvpPlayerHealth">100</span>%</h3>
+                <div class="health-bar player-health">
+                    <div class="health-fill" id="pvpPlayerHealthBar" style="width: 100%"></div>
+                </div>
+                
+                <h3>🎯 Противник: <span id="opponentHealth">100</span>%</h3>
+                <div class="health-bar">
+                    <div class="health-fill" id="opponentHealthBar" style="width: 100%"></div>
+                </div>
+            </div>
+            
+            <div class="dialogue" id="pvpDialogue">
+                🎮 Ожидание начала PVP боя...
+            </div>
+            
+            <div class="buttons">
+                <button class="btn attack-btn" onclick="pvpAttack()">🥊 Атака</button>
+                <button class="btn heal-btn" onclick="pvpHeal()">💊 Лечение</button>
+                <button class="btn status-btn" onclick="pvpStatus()">📊 Статус</button>
+                <button class="btn run-btn" onclick="surrender()">🏃 Сдаться</button>
+            </div>
+            
+            <div class="battle-log" id="pvpLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            playerHealth: 100,
+            bossHealth: 150,
+            currentLocation: null,
+            gameActive: false,
+            isPvP: false
+        };
+        
+        // PvP state
+        let pvpState = {
+            playerHealth: 100,
+            opponentHealth: 100,
+            gameActive: false,
+            myTurn: false
+        };
+        
+        // Aziz dialogues
+        const azizDialogues = [
+            "💨 Ах ты блядь! Дым сигарет мне придает сил, сука!",
+            "🚽 В толчке я непобедим, ебать! Здесь моя сила, пидор!",
+            "🏔️ Горы Кавказа дают мне мощь предков, нахуй!",
+            "🏫 В полике я учился биться как настоящий мужик, бля!",
+            "💪 Ты слабак, еблан! Мои мускулы рельефнее твоих, пидрила!",
+            "🥊 Попробуй ударить сильнее, хуесос!",
+            "😂 Ты дерешься как моя бабка, шлюха!",
+            "🎯 Я тебя по частям разберу, мудак!",
+            "💥 Ощути мощь АзизДжона, сучара!",
+            "🤣 Ты думал, что сможешь победить меня? Иди нахуй, долбоёб!"
+        ];
+        
+        // Location names
+        const locationNames = {
+            smoking: "🚬 Курилка",
+            toilet: "🚽 Толчок",
+            mountains: "🏔️ Горы Кавказа",
+            polyk: "🏫 Полик"
+        };
+        
+        // Initialize WebApp
+        function initWebApp() {
+            // Check if we're in Telegram WebApp
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+            }
+            
+            // Check URL parameters for mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const opponent = urlParams.get('opponent');
+            
+            if (mode === 'pvp' && opponent) {
+                showMode('pvp');
+                addToPvpLog(`🎮 Начат PVP бой против игрока ID: ${opponent}`);
+            } else if (mode === 'stats') {
+                showStats();
+            } else if (mode === 'admin') {
+                showAdminPanel();
+            }
+        }
+        
+        // Show game mode
+        function showMode(mode) {
+            if (mode === 'single') {
+                document.getElementById('singlePlayer').style.display = 'block';
+                document.getElementById('pvpSection').style.display = 'none';
+                gameState.isPvP = false;
+            } else if (mode === 'pvp') {
+                document.getElementById('singlePlayer').style.display = 'none';
+                document.getElementById('pvpSection').style.display = 'block';
+                gameState.isPvP = true;
+                startPvpGame();
+            }
+        }
+        
+        // Select location
+        function selectLocation(location) {
+            gameState.currentLocation = location;
+            gameState.gameActive = true;
+            
+            document.getElementById('dialogue').textContent = 
+                `📍 Локация выбрана: ${locationNames[location]}! 💪`;
+            
+            addToLog(`📍 Вы выбрали локацию: ${locationNames[location]}`);
+            addToLog('🎮 Бой начался! Атакуйте АзизДжона!');
+        }
+        
+        // Player attack
+        function playerAttack() {
+            if (!gameState.gameActive || !gameState.currentLocation) {
+                addToLog('❌ Сначала выберите локацию!');
+                return;
+            }
+            
+            const damage = Math.floor(Math.random() * 20) + 10;
+            gameState.bossHealth -= damage;
+            
+            if (gameState.bossHealth < 0) gameState.bossHealth = 0;
+            
+            updateHealthBars();
+            
+            // Aziz counter-attack
+            const azizDamage = Math.floor(Math.random() * 15) + 5;
+            gameState.playerHealth -= azizDamage;
+            
+            if (gameState.playerHealth < 0) gameState.playerHealth = 0;
+            
+            // Random Aziz dialogue
+            const randomDialogue = azizDialogues[Math.floor(Math.random() * azizDialogues.length)];
+            document.getElementById('dialogue').textContent = randomDialogue;
+            
+            addToLog(`🥊 Вы нанесли ${damage} урона АзизДжону!`);
+            addToLog(`💥 АзизДжон нанес вам ${azizDamage} урона!`);
+            
+            checkGameOver();
+        }
+        
+        // Player heal
+        function playerHeal() {
+            if (!gameState.gameActive) {
+                addToLog('❌ Сначала начните бой!');
+                return;
+            }
+            
+            const heal = Math.floor(Math.random() * 20) + 10;
+            gameState.playerHealth += heal;
+            
+            if (gameState.playerHealth > 100) gameState.playerHealth = 100;
+            
+            // Aziz still attacks
+            const azizDamage = Math.floor(Math.random() * 10) + 5;
+            gameState.playerHealth -= azizDamage;
+            
+            if (gameState.playerHealth < 0) gameState.playerHealth = 0;
+            
+            updateHealthBars();
+            
+            const randomDialogue = azizDialogues[Math.floor(Math.random() * azizDialogues.length)];
+            document.getElementById('dialogue').textContent = randomDialogue;
+            
+            addToLog(`💊 Вы восстановили ${heal} здоровья!`);
+            addToLog(`💥 АзизДжон нанес вам ${azizDamage} урона!`);
+            
+            checkGameOver();
+        }
+        
+        // Show status
+        function showStatus() {
+            addToLog(`📊 Статус: Здоровье ${gameState.playerHealth}% vs АзизДжон ${gameState.bossHealth}%`);
+        }
+        
+        // Run away
+        function runAway() {
+            gameState.gameActive = false;
+            addToLog('🏃 Вы сбежали с поля боя!');
+            document.getElementById('dialogue').textContent = '😤 Ты испугался, слабак!';
+        }
+        
+        // Update health bars
+        function updateHealthBars() {
+            document.getElementById('playerHealth').textContent = gameState.playerHealth;
+            document.getElementById('bossHealth').textContent = gameState.bossHealth;
+            document.getElementById('playerHealthBar').style.width = `${gameState.playerHealth}%`;
+            document.getElementById('bossHealthBar').style.width = `${(gameState.bossHealth / 150) * 100}%`;
+        }
+        
+        // Check game over
+        function checkGameOver() {
+            if (gameState.playerHealth <= 0) {
+                addToLog('💀 Вы проиграли! АзизДжон победил!');
+                gameState.gameActive = false;
+                sendResultToBot('lose');
+            } else if (gameState.bossHealth <= 0) {
+                addToLog('🎉 Вы победили АзизДжона! Уровень повышен!');
+                gameState.gameActive = false;
+                sendResultToBot('win');
+            }
+        }
+        
+        // Add to battle log
+        function addToLog(message) {
+            const log = document.getElementById('battleLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // PvP functions
+        function startPvpGame() {
+            pvpState.gameActive = true;
+            pvpState.myTurn = true; // For demo purposes
+            
+            document.getElementById('pvpDialogue').textContent = 
+                '🎮 Ваш ход! Атакуйте или лечитесь!';
+            
+            updatePvpHealthBars();
+        }
+        
+        function pvpAttack() {
+            if (!pvpState.gameActive) return;
+            
+            if (!pvpState.myTurn) {
+                addToPvpLog('❌ Сейчас не ваш ход!');
+                return;
+            }
+            
+            const damage = Math.floor(Math.random() * 25) + 10;
+            pvpState.opponentHealth -= damage;
+            
+            if (pvpState.opponentHealth < 0) pvpState.opponentHealth = 0;
+            
+            updatePvpHealthBars();
+            addToPvpLog(`🥊 Вы нанесли ${damage} урона противнику!`);
+            
+            pvpState.myTurn = false;
+            document.getElementById('pvpDialogue').textContent = '⏳ Ожидание хода противника...';
+            
+            // Simulate opponent move after delay
+            setTimeout(opponentMove, 2000);
+            
+            checkPvpGameOver();
+        }
+        
+        function pvpHeal() {
+            if (!pvpState.gameActive) return;
+            
+            if (!pvpState.myTurn) {
+                addToPvpLog('❌ Сейчас не ваш ход!');
+                return;
+            }
+            
+            const heal = Math.floor(Math.random() * 20) + 15;
+            pvpState.playerHealth += heal;
+            
+            if (pvpState.playerHealth > 100) pvpState.playerHealth = 100;
+            
+            updatePvpHealthBars();
+            addToPvpLog(`💊 Вы восстановили ${heal} здоровья!`);
+            
+            pvpState.myTurn = false;
+            document.getElementById('pvpDialogue').textContent = '⏳ Ожидание хода противника...';
+            
+            // Simulate opponent move after delay
+            setTimeout(opponentMove, 2000);
+            
+            checkPvpGameOver();
+        }
+        
+        function opponentMove() {
+            if (Math.random() > 0.5) {
+                // Opponent attacks
+                const damage = Math.floor(Math.random() * 20) + 8;
+                pvpState.playerHealth -= damage;
+                
+                if (pvpState.playerHealth < 0) pvpState.playerHealth = 0;
+                
+                addToPvpLog(`💥 Противник нанес вам ${damage} урона!`);
+            } else {
+                // Opponent heals
+                const heal = Math.floor(Math.random() * 15) + 10;
+                pvpState.opponentHealth += heal;
+                
+                if (pvpState.opponentHealth > 100) pvpState.opponentHealth = 100;
+                
+                addToPvpLog(`💉 Противник восстановил ${heal} здоровья!`);
+            }
+            
+            updatePvpHealthBars();
+            pvpState.myTurn = true;
+            document.getElementById('pvpDialogue').textContent = '🎮 Ваш ход! Атакуйте или лечитесь!';
+            
+            checkPvpGameOver();
+        }
+        
+        function pvpStatus() {
+            addToPvpLog(`📊 Статус: Вы ${pvpState.playerHealth}% vs Противник ${pvpState.opponentHealth}%`);
+        }
+        
+        function surrender() {
+            pvpState.gameActive = false;
+            addToPvpLog('🏃 Вы сдались!');
+            document.getElementById('pvpDialogue').textContent = '😔 Вы проиграли по собственному желанию';
+        }
+        
+        function updatePvpHealthBars() {
+            document.getElementById('pvpPlayerHealth').textContent = pvpState.playerHealth;
+            document.getElementById('opponentHealth').textContent = pvpState.opponentHealth;
+            document.getElementById('pvpPlayerHealthBar').style.width = `${pvpState.playerHealth}%`;
+            document.getElementById('opponentHealthBar').style.width = `${pvpState.opponentHealth}%`;
+        }
+        
+        function addToPvpLog(message) {
+            const log = document.getElementById('pvpLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function checkPvpGameOver() {
+            if (pvpState.playerHealth <= 0) {
+                addToPvpLog('💀 Вы проиграли PVP бой!');
+                pvpState.gameActive = false;
+                document.getElementById('pvpDialogue').textContent = '😢 Поражение!';
+            } else if (pvpState.opponentHealth <= 0) {
+                addToPvpLog('🎉 Вы победили в PVP бою!');
+                pvpState.gameActive = false;
+                document.getElementById('pvpDialogue').textContent = '🏆 Победа!';
+            }
+        }
+        
+        // Send result to bot
+        function sendResultToBot(result) {
+            if (window.Telegram && Telegram.WebApp) {
+                const data = {
+                    type: 'battle_result',
+                    result: result,
+                    health: gameState.playerHealth,
+                    boss_health: gameState.bossHealth,
+                    location: gameState.currentLocation
+                };
+                
+                Telegram.WebApp.sendData(JSON.stringify(data));
+            }
+        }
+        
+        // Show stats (placeholder)
+        function showStats() {
+            addToLog('📊 Режим статистики - данные загружаются...');
+        }
+        
+        // Show admin panel (placeholder)
+        function showAdminPanel() {
+            addToLog('👑 Режим админ-панели - доступно только администраторам');
+        }
+        
+        // Initialize when page loads
+        window.onload = initWebApp;
+    </script>
+</body>
+</html>
